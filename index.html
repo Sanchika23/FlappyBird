@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flappy Bird Clone</title>
+    <title>Starry Stepper - Cosmic Staircase Adventure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,6 +17,20 @@
             Best: 0
         </div>
         <div id="message">Press Space or Click to Start</div>
+        
+        <!-- Mobile Touch Controls -->
+        <div id="mobile-controls">
+            <div class="dpad-grid">
+                <button id="btn-up" class="control-btn dir-btn">▲</button>
+                <button id="btn-left" class="control-btn dir-btn">◀</button>
+                <button id="btn-right" class="control-btn dir-btn">▶</button>
+                <button id="btn-down" class="control-btn dir-btn">▼</button>
+            </div>
+            <div class="action-buttons">
+                <button id="btn-attack" class="control-btn action-btn">ATTACK</button>
+                <button id="btn-jump" class="control-btn action-btn">JUMP</button>
+            </div>
+        </div>
     </div>
     <script src="game.js"></script>
 </body>
