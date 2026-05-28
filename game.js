@@ -184,6 +184,8 @@ function playSound(type) {
 
 // Camera & Juice details
 let camera = {
+    x: 0,
+    targetX: 0,
     y: 0,
     targetY: 0,
     shakeTimer: 0,
@@ -309,7 +311,10 @@ function resetGame() {
     shootingStars = [];
     score = 0;
 
+    camera.x = player.x - canvas.width / 3;
+    camera.targetX = camera.x;
     camera.y = player.y - canvas.height / 2;
+    camera.targetY = camera.y;
     camera.shakeTimer = 0;
 
     lastStepX = 100;
@@ -423,7 +428,10 @@ function restartOnLifeLost() {
     floatingTexts = [];
     shootingStars = [];
 
+    camera.x = player.x - canvas.width / 3;
+    camera.targetX = camera.x;
     camera.y = player.y - canvas.height / 2;
+    camera.targetY = camera.y;
 
     lastStepX = 100;
     lastStepY = 280;
@@ -868,9 +876,10 @@ function update() {
     player.vx = moveX;
     player.x += player.vx;
 
-    // Keep player inside bounds
-    if (player.x < 0) player.x = 0;
-    if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+    // Keep player from going off-screen to the left
+    if (player.x < camera.x) {
+        player.x = camera.x;
+    }
 
     if (player.vx !== 0) {
         player.walkCycle += 0.18;
@@ -896,7 +905,10 @@ function update() {
         spawnJumpParticles(player.x + player.width / 2, player.y + player.height);
     }
 
-    // Camera Y tracking & screen shake decay
+    // Camera tracking & screen shake decay
+    camera.targetX = player.x - canvas.width / 3;
+    camera.x += (camera.targetX - camera.x) * 0.08;
+
     camera.targetY = player.y - canvas.height / 2;
     camera.y += (camera.targetY - camera.y) * 0.08;
 
@@ -907,23 +919,7 @@ function update() {
     // Platform logic
     let onAnyPlatform = false;
 
-    // Scroll platforms (only if player made their first move and is walking/running)
-    let currentPlatformSpeed = 0;
-    if (firstMoveMade) {
-        if (keys.ArrowRight) {
-            currentPlatformSpeed = PLATFORM_SPEED;
-        } else if (keys.ArrowLeft) {
-            currentPlatformSpeed = -PLATFORM_SPEED;
-        }
-    }
-
-    lastStepX -= currentPlatformSpeed;
-
     steps.forEach(p => {
-        p.x -= currentPlatformSpeed;
-        if (p.type === 'shifting') {
-            p.startX -= currentPlatformSpeed;
-        }
 
         // Shifting platform logic
         if (p.type === 'shifting') {
@@ -1038,12 +1034,12 @@ function update() {
     }
 
     // Spawn new steps on scroll
-    while (lastStepX < canvas.width + 200) {
+    while (lastStepX < camera.x + canvas.width + 200) {
         spawnNextStep();
     }
 
     // Filter out steps scrolled off-screen
-    steps = steps.filter(p => p.x + p.width > -100);
+    steps = steps.filter(p => p.x + p.width > camera.x - 200);
 
     // Particles/Stars update
     for (let i = particles.length - 1; i >= 0; i--) {
@@ -1124,7 +1120,7 @@ function draw() {
 
     // Draw Nebulae
     nebulae.forEach(n => {
-        let px = n.x;
+        let px = n.x - camera.x * 0.15;
         let py = n.y - camera.y * 0.15;
         let nebulaGrad = ctx.createRadialGradient(px, py, 10, px, py, n.r);
         nebulaGrad.addColorStop(0, n.color);
@@ -1138,9 +1134,10 @@ function draw() {
     // Draw Starfield
     stars.forEach(star => {
         let factor = 0.05 * star.layer;
-        let px = star.x;
+        let px = (star.x - camera.x * factor) % (canvas.width * 2);
         let py = (star.y - camera.y * factor) % (canvas.height * 2);
 
+        if (px < 0) px += canvas.width * 2;
         if (py < 0) py += canvas.height * 2;
 
         if (px < canvas.width && py < canvas.height) {
@@ -1159,7 +1156,7 @@ function draw() {
     });
 
     // Draw Crescent Moon
-    let moonX = 680;
+    let moonX = 680 - camera.x * 0.03;
     let moonY = 80 - camera.y * 0.03;
     ctx.save();
     ctx.shadowColor = 'rgba(255, 255, 230, 0.25)';
@@ -1178,7 +1175,7 @@ function draw() {
 
     // Draw Shooting Stars
     shootingStars.forEach(ss => {
-        let px = ss.x;
+        let px = ss.x - camera.x;
         let py = ss.y - camera.y;
         let grad = ctx.createLinearGradient(px, py, px - ss.vx, py - ss.vy);
         grad.addColorStop(0, `rgba(255, 255, 255, ${ss.alpha})`);
@@ -1191,7 +1188,7 @@ function draw() {
         ctx.stroke();
     });
 
-    // 2. Draw Game Objects relative to Y Camera Offset (incorporates screen shake)
+    // 2. Draw Game Objects relative to Camera Offset (incorporates screen shake)
     ctx.save();
     
     let shakeX = 0;
@@ -1200,7 +1197,7 @@ function draw() {
         shakeX = (Math.random() - 0.5) * camera.shakeIntensity;
         shakeY = (Math.random() - 0.5) * camera.shakeIntensity;
     }
-    ctx.translate(shakeX, -camera.y + shakeY);
+    ctx.translate(-camera.x + shakeX, -camera.y + shakeY);
 
     // Draw Steps
     steps.forEach(p => {
@@ -1556,7 +1553,7 @@ function draw() {
     // Draw Attack Slash Arc
     if (player.attackTimer > 0 && gameRunning) {
         ctx.save();
-        ctx.translate(0, -camera.y);
+        ctx.translate(-camera.x, -camera.y);
         ctx.globalAlpha = player.attackTimer / 16;
         ctx.strokeStyle = 'rgba(93, 173, 226, 0.7)';
         ctx.lineWidth = 5;
