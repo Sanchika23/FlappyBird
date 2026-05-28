@@ -31,12 +31,12 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
 canvas.width = 800;
 canvas.height = 450;
 
-// Game constants (Tuned to be difficult: high gravity, fast falling, smaller steps)
-const GRAVITY = 0.42;           // High gravity
-const JUMP_STRENGTH = -10.5;    // Stronger, higher jump
+// Game constants (Tuned to be Medium difficulty: balanced gravity, wider steps)
+const GRAVITY = 0.38;           // Balanced gravity
+const JUMP_STRENGTH = -9.8;     // Balanced jump height
 const MOVE_SPEED = 4.6;         // Snappy horizontal speed
-const PLATFORM_SPEED = 1.6;     // Faster scrolling platforms
-const STEP_WIDTH = 95;          // Narrower platforms (difficult)
+const PLATFORM_SPEED = 1.6;     // Scrolling speed
+const STEP_WIDTH = 115;         // Wider platforms (Medium difficulty)
 const STEP_HEIGHT = 16;
 const PLAYER_WIDTH = 22;
 const PLAYER_HEIGHT = 38;
@@ -379,8 +379,8 @@ function spawnNextStep() {
         }
     }
 
-    // Space out step horizontally (wider gaps for difficult platforming)
-    let stepXDiff = STEP_WIDTH + 38 + Math.random() * 38;
+    // Space out step horizontally (moderate gaps for Medium difficulty)
+    let stepXDiff = STEP_WIDTH + 25 + Math.random() * 25;
     let targetX = lastStepX + stepXDiff;
 
     lastStepX = targetX;
@@ -401,8 +401,8 @@ function spawnNextStep() {
         coinAnim: Math.random() * Math.PI * 2,
         opacity: 1,
         startX: targetX,
-        shiftRange: 35 + Math.random() * 35,
-        shiftSpeed: 0.3 + Math.random() * 0.3,
+        shiftRange: 20 + Math.random() * 20,
+        shiftSpeed: 0.25 + Math.random() * 0.25,
         shiftDir: Math.random() < 0.5 ? -1 : 1,
         shiftTime: Math.random() * 100,
         hasEnemy: hasEnemy,
